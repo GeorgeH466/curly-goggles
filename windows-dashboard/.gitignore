@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Runtime artefacts
+logs/
+*.log
+config.broken.json
+config.json.tmp
+
+# OS / editors
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Tooling caches
+.ruff_cache/
+.pytest_cache/

@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Command Center</title>
+  <meta name="description" content="Local dashboard for your Windows PC: monitoring, terminals, repos, files and controls." />
+  <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="/vendor/xterm.css" />
+  <link rel="stylesheet" href="/css/styles.css" />
+</head>
+<body>
+  <!-- Connection / loading veil -->
+  <div id="boot-veil" class="boot-veil">
+    <div class="boot-logo">
+      <svg viewBox="0 0 48 48" aria-hidden="true"><use href="#icon-grid" /></svg>
+    </div>
+    <div class="boot-text">Booting command center<span class="dots"><i>.</i><i>.</i><i>.</i></span></div>
+  </div>
+
+  <div class="app-shell">
+    <!-- ============================ SIDEBAR ============================ -->
+    <aside class="sidebar" id="sidebar">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 48 48"><use href="#icon-grid" /></svg>
+        </div>
+        <div class="brand-text">
+          <strong>COMMAND</strong>
+          <span>CENTER</span>
+        </div>
+        <button class="icon-btn sidebar-collapse" id="sidebar-collapse" title="Collapse sidebar" aria-label="Collapse sidebar">
+          <svg viewBox="0 0 24 24"><use href="#icon-chevrons-left" /></svg>
+        </button>
+      </div>
+
+      <nav class="nav" aria-label="Main navigation">
+        <button class="nav-item is-active" data-view="overview" title="Overview">
+          <svg viewBox="0 0 24 24"><use href="#icon-grid" /></svg><span>Overview</span>
+        </button>
+        <button class="nav-item" data-view="terminal" title="Terminal">
+          <svg viewBox="0 0 24 24"><use href="#icon-terminal" /></svg><span>Terminal</span>
+          <kbd>Alt+1</kbd>
+        </button>
+        <button class="nav-item" data-view="files" title="Files">
+          <svg viewBox="0 0 24 24"><use href="#icon-folder" /></svg><span>Files</span>
+        </button>
+        <button class="nav-item" data-view="network" title="Network">
+          <svg viewBox="0 0 24 24"><use href="#icon-wifi" /></svg><span>Network</span>
+        </button>
+        <button class="nav-item" data-view="system" title="System">
+          <svg viewBox="0 0 24 24"><use href="#icon-activity" /></svg><span>System</span>
+        </button>
+        <button class="nav-item" data-view="notes" title="Notes">
+          <svg viewBox="0 0 24 24"><use href="#icon-edit" /></svg><span>Notes</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-lower">
+        <div class="sidebar-status">
+          <span class="status-dot" id="link-dot" data-state="offline"></span>
+          <div>
+            <strong id="link-label">Connecting</strong>
+            <small id="link-detail">waiting for stats stream</small>
+          </div>
+        </div>
+        <div class="sidebar-actions">
+          <button class="icon-btn" id="btn-palette" title="Command palette (Ctrl+K)">
+            <svg viewBox="0 0 24 24"><use href="#icon-search" /></svg>
+          </button>
+          <button class="icon-btn" id="btn-theme" title="Toggle theme">
+            <svg viewBox="0 0 24 24"><use href="#icon-moon" /></svg>
+          </button>
+          <button class="icon-btn" id="btn-settings" title="Settings">
+            <svg viewBox="0 0 24 24"><use href="#icon-settings" /></svg>
+          </button>
+          <button class="icon-btn" id="btn-docs" title="API documentation">
+            <svg viewBox="0 0 24 24"><use href="#icon-book" /></svg>
+          </button>
+        </div>
+        <div class="sidebar-version"><span id="app-version">v1.0.0</span> · local only</div>
+      </div>
+    </aside>
+
+    <!-- ============================== MAIN ============================== -->
+    <div class="main">
+      <header class="topbar">
+        <button class="icon-btn mobile-nav" id="mobile-nav" aria-label="Menu">
+          <svg viewBox="0 0 24 24"><use href="#icon-menu" /></svg>
+        </button>
+        <div class="page-heading">
+          <h1 id="page-title">Overview</h1>
+          <p id="page-subtitle">Everything about your machine, at a glance</p>
+        </div>
+        <div class="topbar-metrics">
+          <div class="metric-pill" title="CPU load">
+            <svg viewBox="0 0 24 24"><use href="#icon-cpu" /></svg>
+            <span id="top-cpu">--%</span>
+          </div>
+          <div class="metric-pill" title="Memory usage">
+            <svg viewBox="0 0 24 24"><use href="#icon-memory" /></svg>
+            <span id="top-mem">--%</span>
+          </div>
+          <div class="metric-pill" title="Network throughput">
+            <svg viewBox="0 0 24 24"><use href="#icon-download" /></svg>
+            <span id="top-net">--</span>
+          </div>
+        </div>
+        <div class="topbar-actions">
+          <div class="clock">
+            <strong id="clock-time">--:--</strong>
+            <span id="clock-date">—</span>
+          </div>
+          <button class="icon-btn" id="btn-refresh" title="Refresh now">
+            <svg viewBox="0 0 24 24"><use href="#icon-refresh" /></svg>
+          </button>
+        </div>
+      </header>
+
+      <main class="views" id="views">
+        <!-- ========================= OVERVIEW ========================= -->
+        <section class="view is-active" id="view-overview" data-view="overview">
+          <div class="card-grid" id="card-grid">
+            <!-- System -->
+            <article class="card card-wide-2" data-card="system">
+              <header class="card-head">
+                <div class="card-title">
+                  <svg viewBox="0 0 24 24"><use href="#icon-cpu" /></svg>
+                  <h2>System</h2>
+                  <span class="badge" id="sys-badge">live</span>
+                </div>
+                <div class="card-tools">
+                  <button class="icon-btn tiny" data-card-action="maximize" title="Expand">
+                    <svg viewBox="0 0 24 24"><use href="#icon-maximize" /></svg>
+                  </button>
+                  <span class="drag-handle" title="Drag to reorder">
+                    <svg viewBox="0 0 24 24"><use href="#icon-grip" /></svg>
+                  </span>
+                </div>
+              </header>
+              <div class="card-body system-body">
+                <div class="gauges">
+                  <div class="gauge" id="gauge-cpu">
+                    <svg viewBox="0 0 120 120" class="gauge-svg"><circle class="gauge-track" cx="60" cy="60" r="52"/><circle class="gauge-value" cx="60" cy="60" r="52"/></svg>
+                    <div class="gauge-center"><strong id="cpu-value">--</strong><span>CPU</span></div>
+                  </div>
+                  <div class="gauge" id="gauge-mem">
+                    <svg viewBox="0 0 120 120" class="gauge-svg"><circle class="gauge-track" cx="60" cy="60" r="52"/><circle class="gauge-value" cx="60" cy="60" r="52"/></svg>
+                    <div class="gauge-center"><strong id="mem-value">--</strong><span>RAM</span></div>
+                  </div>
+                  <div class="gauge gauge-small" id="gauge-disk">
+                    <svg viewBox="0 0 120 120" class="gauge-svg"><circle class="gauge-track" cx="60" cy="60" r="52"/><circle class="gauge-value" cx="60" cy="60" r="52"/></svg>
+                    <div class="gauge-center"><strong id="disk-value">--</strong><span>Disk</span></div>
+                  </div>
+                </div>
+                <div class="stat-block">
+                  <dl class="stat-list" id="system-facts">
+                    <div><dt>Uptime</dt><dd id="fact-uptime">—</dd></div>
+                    <div><dt>Processes</dt><dd id="fact-processes">—</dd></div>
+                    <div><dt>Host</dt><dd id="fact-host">—</dd></div>
+                    <div><dt>OS</dt><dd id="fact-os">—</dd></div>
+                    <div><dt>CPU</dt><dd id="fact-cpu">—</dd></div>
+                    <div><dt>Local IP</dt><dd id="fact-ip">—</dd></div>
+                  </dl>
+                  <div class="spark-wrap">
+                    <div class="spark-label"><span>CPU / RAM history</span><span id="spark-legend">last 3 min</span></div>
+                    <canvas id="spark-main" height="72"></canvas>
+                  </div>
+                </div>
+              </div>
+              <div class="card-foot" id="system-cores"></div>
+              <div class="resize-handle"></div>
+            </article>
+
+            <!-- GPU / thermal / battery -->
+            <article class="card" data-card="gpu">
+              <header class="card-head">
+                <div class="card-title">
+                  <svg viewBox="0 0 24 24"><use href="#icon-gpu" /></svg>
+                  <h2>Hardware</h2>
+                </div>
+                <div class="card-tools">
+                  <span class="drag-handle" title="Drag to reorder"><svg viewBox="0 0 24 24"><use href="#icon-grip" /></svg></span>
+                </div>
+              </header>
+              <div class="card-body" id="hardware-body">
+                <div class="skeleton-line"></div>
+                <div class="skeleton-line short"></div>
+              </div>
+              <div class="resize-handle"></div>
+            </article>
+
+            <!-- Network -->
+            <article class="card" data-card="network">
+              <header class="card-head">
+                <div class="card-title">
+                  <svg viewBox="0 0 24 24"><use href="#icon-wifi" /></svg>
+                  <h2>Network</h2>
+                </div>
+                <div class="card-tools">
+                  <button class="text-btn" data-goto="network">Details</button>
+                  <span class="drag-handle" title="Drag to reorder"><svg viewBox="0 0 24 24"><use href="#icon-grip" /></svg></span>
+                </div>
+              </header>
+              <div class="card-body" id="network-body"></div>
+              <div class="resize-handle"></div>
+            </article>
+
+            <!-- Weather -->
+            <article class="card" data-card="weather">
+              <header class="card-head">
+                <div class="card-title">
+                  <svg viewBox="0 0 24 24"><use href="#icon-cloud" /></svg>
+                  <h2>Weather</h2>
+                </div>
+                <div class="card-tools">
+                  <button class="icon-btn tiny" id="weather-refresh" title="Refresh weather">
+                    <svg viewBox="0 0 24 24"><use href="#icon-refresh" /></svg>
+                  </button>
+                  <span class="drag-handle" title="Drag to reorder"><svg viewBox="0 0 24 24"><use href="#icon-grip" /></svg></span>
+                </div>
+              </header>
+              <div class="card-body" id="weather-body"></div>
+              <div class="resize-handle"></div>
+            </article>
+
+            <!-- Disks -->
+            <article class="card" data-card="storage">
+              <header class="card-head">
+                <div class="card-title">
+                  <svg viewBox="0 0 24 24"><use href="#icon-drive" /></svg>
+                  <h2>Storage</h2>
+                </div>
+                <div class="card-tools">
+                  <span class="drag-handle" title="Drag to reorder"><svg viewBox="0 0 24 24"><use href="#icon-grip" /></svg></span>
+                </div>
+              </header>
+              <div class="card-body" id="storage-body"></div>
+              <div class="resize-handle"></div>
+            </article>
+
+            <!-- Repositories -->
+            <article class="card card-wide-2" data-card="repos">
+              <header class="card-head">
+                <div class="card-title">
+                  <svg viewBox="0 0 24 24"><use href="#icon-git" /></svg>
+                  <h2>Repositories</h2>
+                  <span class="badge badge-muted" id="repo-count">—</span>
+                </div>
+                <div class="card-tools">
+                  <button class="text-btn" id="btn-github-desktop">GitHub Desktop</button>
+                  <button class="icon-btn tiny" id="btn-rescan-repos" title="Rescan repositories">
+                    <svg viewBox="0 0 24 24"><use href="#icon-refresh" /></svg>
+                  </button>
+                  <span class="drag-handle" title="Drag to reorder"><svg viewBox="0 0 24 24"><use href="#icon-grip" /></svg></span>
+                </div>
+              </header>
+              <div class="card-body repo-body" id="repos-body"></div>
+              <div class="resize-handle"></div>
+            </article>
+
+            <!-- Quick launch -->
+            <article class="card card-wide-2" data-card="launcher">
+              <header class="card-head">
+                <div class="card-title">
+                  <svg viewBox="0 0 24 24"><use href="#icon-rocket" /></svg>
+                  <h2>Quick launch</h2>
+                </div>
+                <div class="card-tools">
+                  <button class="text-btn" id="btn-add-shortcut">+ Add</button>
+                  <span class="drag-handle" title="Drag to reorder"><svg viewBox="0 0 24 24"><use href="#icon-grip" /></svg></span>
+                </div>
+              </header>
+              <div class="card-body" id="launcher-body"></div>
+              <div class="resize-handle"></div>
+            </article>
+
+            <!-- Notes mini -->
+            <article class="card" data-card="notes">
+              <header class="card-head">
+                <div class="card-title">
+                  <svg viewBox="0 0 24 24"><use href="#icon-edit" /></svg>
+                  <h2>Scratchpad</h2>
+                </div>
+                <div class="card-tools">
+                  <button class="text-btn" data-goto="notes">All notes</button>
+                  <span class="drag-handle" title="Drag to reorder"><svg viewBox="0 0 24 24"><use href="#icon-grip" /></svg></span>
+                </div>
+              </header>
+              <div class="card-body" id="scratchpad-body">
+                <textarea id="scratchpad" class="scratchpad" placeholder="Jot something down… (markdown)" spellcheck="false"></textarea>
+                <div class="scratchpad-foot"><span id="scratchpad-status">ready</span><span id="scratchpad-count">0 words</span></div>
+              </div>
+              <div class="resize-handle"></div>
+            </article>
+
+            <!-- Docker -->
+            <article class="card card-wide-2" data-card="docker" hidden>
+              <header class="card-head">
+                <div class="card-title">
+                  <svg viewBox="0 0 24 24"><use href="#icon-box" /></svg>
+                  <h2>Docker</h2>
+                  <span class="badge badge-muted" id="docker-badge">checking</span>
+                </div>
+                <div class="card-tools">
+                  <button class="icon-btn tiny" id="docker-refresh" title="Refresh containers">
+                    <svg viewBox="0 0 24 24"><use href="#icon-refresh" /></svg>
+                  </button>
+                  <span class="drag-handle" title="Drag to reorder"><svg viewBox="0 0 24 24"><use href="#icon-grip" /></svg></span>
+                </div>
+              </header>
+              <div class="card-body" id="docker-body"></div>
+              <div class="resize-handle"></div>
+            </article>
+
+            <!-- Controls -->
+            <article class="card card-wide-2" data-card="controls">
+              <header class="card-head">
+                <div class="card-title">
+                  <svg viewBox="0 0 24 24"><use href="#icon-power" /></svg>
+                  <h2>System controls</h2>
+                </div>
+                <div class="card-tools">
+                  <span class="drag-handle" title="Drag to reorder"><svg viewBox="0 0 24 24"><use href="#icon-grip" /></svg></span>
+                </div>
+              </header>
+              <div class="card-body" id="controls-body"></div>
+              <div class="resize-handle"></div>
+            </article>
+          </div>
+        </section>
+
+        <!-- ========================= TERMINAL ========================= -->
+        <section class="view" id="view-terminal" data-view="terminal">
+          <div class="panel terminal-panel">
+            <div class="terminal-head">
+              <div class="terminal-tabs" id="terminal-tabs"></div>
+              <div class="terminal-actions">
+                <select id="term-shell" class="select small" title="Shell for new tabs"></select>
+                <button class="icon-btn" id="term-new" title="New terminal tab">
+                  <svg viewBox="0 0 24 24"><use href="#icon-plus" /></svg>
+                </button>
+                <button class="icon-btn" id="term-history" title="Command history">
+                  <svg viewBox="0 0 24 24"><use href="#icon-history" /></svg>
+                </button>
+                <button class="icon-btn" id="term-clear" title="Clear screen">
+                  <svg viewBox="0 0 24 24"><use href="#icon-eraser" /></svg>
+                </button>
+                <button class="icon-btn" id="term-kill" title="Close current tab">
+                  <svg viewBox="0 0 24 24"><use href="#icon-x" /></svg>
+                </button>
+              </div>
+            </div>
+            <div class="terminal-wrap">
+              <div id="terminal-host" class="terminal-host"></div>
+              <aside class="term-history-panel" id="term-history-panel" hidden>
+                <header><strong>Command history</strong><button class="icon-btn tiny" id="term-history-close"><svg viewBox="0 0 24 24"><use href="#icon-x" /></svg></button></header>
+                <div id="term-history-list" class="history-list"></div>
+                <p class="muted small">Click a command to insert it into the active terminal.</p>
+              </aside>
+            </div>
+            <div class="terminal-foot">
+              <span id="term-status">No session</span>
+              <span class="muted small" id="term-mode"></span>
+            </div>
+          </div>
+        </section>
+
+        <!-- =========================== FILES =========================== -->
+        <section class="view" id="view-files" data-view="files">
+          <div class="panel files-panel">
+            <aside class="files-sidebar">
+              <div class="files-section">
+                <h3>Quick access</h3>
+                <div id="file-quick"></div>
+              </div>
+              <div class="files-section">
+                <h3>Drives</h3>
+                <div id="file-drives"></div>
+              </div>
+            </aside>
+            <div class="files-main">
+              <div class="files-toolbar">
+                <button class="icon-btn" id="file-up" title="Up one level"><svg viewBox="0 0 24 24"><use href="#icon-arrow-up" /></svg></button>
+                <button class="icon-btn" id="file-home" title="Home"><svg viewBox="0 0 24 24"><use href="#icon-home" /></svg></button>
+                <div class="breadcrumbs" id="file-breadcrumbs"></div>
+                <div class="files-tools">
+                  <label class="switch small"><input type="checkbox" id="file-hidden" /><span></span> hidden</label>
+                  <button class="btn ghost sm" id="file-refresh"><svg viewBox="0 0 24 24"><use href="#icon-refresh" /></svg> Refresh</button>
+                  <button class="btn sm" id="file-new-folder"><svg viewBox="0 0 24 24"><use href="#icon-folder-plus" /></svg> New folder</button>
+                </div>
+              </div>
+              <div class="files-toolbar second">
+                <div class="input-with-icon search">
+                  <svg viewBox="0 0 24 24"><use href="#icon-search" /></svg>
+                  <input id="file-search" placeholder="Search this folder…" />
+                </div>
+                <span class="muted small" id="file-status"></span>
+              </div>
+              <div class="table-wrap">
+                <table class="data-table" id="file-table">
+                  <thead>
+                    <tr><th>Name</th><th class="num">Size</th><th>Modified</th><th class="actions-col">Actions</th></tr>
+                  </thead>
+                  <tbody id="file-rows"></tbody>
+                </table>
+                <div class="empty-state" id="file-empty" hidden>
+                  <svg viewBox="0 0 24 24"><use href="#icon-folder" /></svg>
+                  <p>This folder is empty</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ========================== NETWORK ========================== -->
+        <section class="view" id="view-network" data-view="network">
+          <div class="stack-grid">
+            <article class="panel">
+              <header class="panel-head"><h2>Adapters</h2><span class="muted small" id="net-hostname"></span></header>
+              <div id="network-adapters" class="panel-body"></div>
+            </article>
+            <article class="panel">
+              <header class="panel-head"><h2>Connectivity</h2>
+                <button class="btn ghost sm" id="net-external-refresh">Refresh IP</button>
+              </header>
+              <div class="panel-body" id="network-connectivity"></div>
+            </article>
+            <article class="panel">
+              <header class="panel-head"><h2>Ping test</h2></header>
+              <div class="panel-body">
+                <div class="ping-controls">
+                  <select id="ping-target" class="select">
+                    <option value="8.8.8.8">Google DNS · 8.8.8.8</option>
+                    <option value="1.1.1.1">Cloudflare · 1.1.1.1</option>
+                    <option value="google.com">google.com</option>
+                    <option value="one.one.one.one">one.one.one.one</option>
+                  </select>
+                  <input id="ping-custom" class="input" placeholder="or hostname…" />
+                  <button class="btn" id="ping-run">Run</button>
+                  <button class="btn ghost" id="speedtest-run">Speed test</button>
+                </div>
+                <div id="ping-results" class="ping-results empty-state small">
+                  <p>Run a ping to measure latency to a host.</p>
+                </div>
+              </div>
+            </article>
+            <article class="panel">
+              <header class="panel-head">
+                <h2>Open ports</h2>
+                <div class="panel-actions">
+                  <span class="muted small" id="ports-count"></span>
+                  <button class="btn ghost sm" id="ports-refresh">Refresh</button>
+                </div>
+              </header>
+              <div class="panel-body">
+                <p class="muted small" id="ports-note"></p>
+                <div class="table-wrap short">
+                  <table class="data-table">
+                    <thead><tr><th>Port</th><th>Protocol</th><th>Address</th><th>Process</th><th class="num">PID</th></tr></thead>
+                    <tbody id="ports-rows"></tbody>
+                  </table>
+                </div>
+                <div class="portscan">
+                  <div class="input-row">
+                    <input id="portscan-host" class="input" value="127.0.0.1" placeholder="Host" />
+                    <button class="btn ghost sm" id="portscan-run">Scan common ports</button>
+                  </div>
+                  <div id="portscan-results" class="portscan-results"></div>
+                </div>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <!-- =========================== SYSTEM ========================== -->
+        <section class="view" id="view-system" data-view="system">
+          <div class="stack-grid">
+            <article class="panel">
+              <header class="panel-head"><h2>Machine</h2><span class="badge" id="sys-admin-badge">—</span></header>
+              <div class="panel-body"><dl class="detail-list" id="sys-details"></dl></div>
+            </article>
+            <article class="panel">
+              <header class="panel-head"><h2>Processor</h2><span class="muted small" id="cpu-model"></span></header>
+              <div class="panel-body">
+                <div class="core-grid" id="core-grid"></div>
+                <div class="progress-legend">
+                  <span>Load average <strong id="load-avg">—</strong></span>
+                  <span>Frequency <strong id="cpu-freq">—</strong></span>
+                </div>
+              </div>
+            </article>
+            <article class="panel">
+              <header class="panel-head"><h2>Disks</h2></header>
+              <div class="panel-body" id="sys-disks"></div>
+            </article>
+            <article class="panel">
+              <header class="panel-head">
+                <h2>Processes</h2>
+                <div class="panel-actions">
+                  <select id="proc-sort" class="select small">
+                    <option value="cpu">Top CPU</option>
+                    <option value="memory">Top RAM</option>
+                    <option value="name">By name</option>
+                  </select>
+                  <button class="btn ghost sm" id="proc-refresh">Refresh</button>
+                </div>
+              </header>
+              <div class="panel-body">
+                <div class="table-wrap short">
+                  <table class="data-table">
+                    <thead><tr><th>Process</th><th class="num">PID</th><th class="num">CPU</th><th class="num">RAM</th><th>Status</th></tr></thead>
+                    <tbody id="proc-rows"></tbody>
+                  </table>
+                </div>
+              </div>
+            </article>
+            <article class="panel">
+              <header class="panel-head"><h2>Maintenance</h2></header>
+              <div class="panel-body">
+                <div class="button-grid" id="maintenance-buttons">
+                  <button class="btn ghost" data-maintenance="flush-dns">
+                    <svg viewBox="0 0 24 24"><use href="#icon-wifi" /></svg> Flush DNS
+                  </button>
+                  <button class="btn ghost" data-maintenance="clear-temp">
+                    <svg viewBox="0 0 24 24"><use href="#icon-trash" /></svg> Clear temp files
+                  </button>
+                  <button class="btn ghost" data-maintenance="empty-recycle-bin">
+                    <svg viewBox="0 0 24 24"><use href="#icon-recycle" /></svg> Empty Recycle Bin
+                  </button>
+                  <button class="btn ghost" data-maintenance="restart-explorer">
+                    <svg viewBox="0 0 24 24"><use href="#icon-refresh" /></svg> Restart Explorer
+                  </button>
+                </div>
+                <h3 class="section-label">Recent actions</h3>
+                <ul class="action-log" id="action-log"></ul>
+              </div>
+            </article>
+            <article class="panel danger-panel">
+              <header class="panel-head"><h2>Power</h2><span class="muted small">Always asks for confirmation</span></header>
+              <div class="panel-body">
+                <div class="button-grid power-grid" id="power-buttons">
+                  <button class="btn ghost" data-power="lock"><svg viewBox="0 0 24 24"><use href="#icon-lock" /></svg> Lock</button>
+                  <button class="btn ghost" data-power="sleep"><svg viewBox="0 0 24 24"><use href="#icon-moon" /></svg> Sleep</button>
+                  <button class="btn ghost" data-power="restart"><svg viewBox="0 0 24 24"><use href="#icon-refresh" /></svg> Restart</button>
+                  <button class="btn danger" data-power="shutdown"><svg viewBox="0 0 24 24"><use href="#icon-power" /></svg> Shut down</button>
+                </div>
+                <div id="pending-power" class="pending-power" hidden>
+                  <span><strong id="pending-text">Shutdown scheduled</strong></span>
+                  <button class="btn sm" id="btn-abort-power">Abort</button>
+                </div>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <!-- ============================ NOTES ========================== -->
+        <section class="view" id="view-notes" data-view="notes">
+          <div class="panel notes-panel">
+            <aside class="notes-sidebar">
+              <header>
+                <h2>Notes</h2>
+                <button class="icon-btn" id="note-new" title="New note"><svg viewBox="0 0 24 24"><use href="#icon-plus" /></svg></button>
+              </header>
+              <div id="note-list" class="note-list"></div>
+            </aside>
+            <div class="notes-editor">
+              <div class="note-tabs" id="note-tabs" role="tablist" aria-label="Open notes"></div>
+              <div class="notes-toolbar">
+                <input id="note-title" class="input title-input" placeholder="Note title" />
+                <div class="notes-actions">
+                  <span class="badge badge-muted" id="note-saved">saved</span>
+                  <button class="btn ghost sm" id="note-preview-toggle">Preview</button>
+                  <button class="btn ghost sm" id="note-rename">Rename</button>
+                  <button class="btn danger sm" id="note-delete">Delete</button>
+                </div>
+              </div>
+              <div class="notes-split" id="notes-split">
+                <textarea id="note-content" class="note-textarea" spellcheck="true"
+                          placeholder="# New note&#10;&#10;Markdown is supported. Switch to Preview to render it."></textarea>
+                <div id="note-preview" class="markdown note-preview" hidden></div>
+              </div>
+              <div class="notes-foot">
+                <span id="note-count">0 words · 0 chars</span>
+                <span class="muted small">Autosaves to <code>notes/</code> as you type</span>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <!-- ============================ OVERLAYS ============================ -->
+  <div id="toasts" class="toasts" aria-live="polite"></div>
+  <div id="modal-root"></div>
+
+  <div id="palette" class="palette" hidden>
+    <div class="palette-box">
+      <input id="palette-input" placeholder="Type a command or search views…" autocomplete="off" />
+      <div id="palette-list" class="palette-list"></div>
+    </div>
+  </div>
+
+  <!-- SVG icon sprite -->
+  <svg class="svg-sprite" aria-hidden="true">
+    <symbol id="icon-grid" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></symbol>
+    <symbol id="icon-cpu" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2"/><rect x="9" y="9" width="6" height="6" rx="1"/><path d="M9 2v3M15 2v3M9 19v3M15 19v3M2 9h3M2 15h3M19 9h3M19 15h3"/></symbol>
+    <symbol id="icon-memory" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="10" rx="2"/><path d="M6 17v3M10 17v3M14 17v3M18 17v3M6 10v4M10 10v4M14 10v4M18 10v4"/></symbol>
+    <symbol id="icon-gpu" viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="8" cy="12" r="2.5"/><path d="M14 9h5M14 12h5M14 15h3M5 18v3M11 18v3"/></symbol>
+    <symbol id="icon-terminal" viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m6 9 3 3-3 3M12 15h6"/></symbol>
+    <symbol id="icon-folder" viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/></symbol>
+    <symbol id="icon-folder-plus" viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/><path d="M12 11v6M9 14h6"/></symbol>
+    <symbol id="icon-file" viewBox="0 0 24 24"><path d="M6 2h8l5 5v15H6z"/><path d="M14 2v5h5"/></symbol>
+    <symbol id="icon-wifi" viewBox="0 0 24 24"><path d="M2.5 9a15 15 0 0 1 19 0M5.5 12.5a10 10 0 0 1 13 0M8.5 16a5.5 5.5 0 0 1 7 0"/><circle cx="12" cy="19.5" r="1.2" fill="currentColor" stroke="none"/></symbol>
+    <symbol id="icon-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.5 2.5 15 0 18M12 3c-2.5 2.5-2.5 15 0 18"/></symbol>
+    <symbol id="icon-activity" viewBox="0 0 24 24"><path d="M3 12h4l2.5-7 4 14 3-7h4.5"/></symbol>
+    <symbol id="icon-edit" viewBox="0 0 24 24"><path d="M4 20h4l10-10a2.8 2.8 0 0 0-4-4L4 16z"/><path d="m14 6 4 4"/></symbol>
+    <symbol id="icon-trash" viewBox="0 0 24 24"><path d="M4 7h16M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2M6 7l1 13h10l1-13M10 11v5M14 11v5"/></symbol>
+    <symbol id="icon-recycle" viewBox="0 0 24 24"><path d="M7 19V9h10v10a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2ZM5 9h14M9 5h6M10 13v4M14 13v4"/></symbol>
+    <symbol id="icon-lock" viewBox="0 0 24 24"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></symbol>
+    <symbol id="icon-moon" viewBox="0 0 24 24"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5Z"/></symbol>
+    <symbol id="icon-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.2"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M19.1 4.9l-1.8 1.8M6.7 17.3l-1.8 1.8"/></symbol>
+    <symbol id="icon-power" viewBox="0 0 24 24"><path d="M12 3v9"/><path d="M6.4 6.4a8 8 0 1 0 11.2 0"/></symbol>
+    <symbol id="icon-refresh" viewBox="0 0 24 24"><path d="M20 11a8 8 0 1 0-.7 4"/><path d="M20 4v7h-7"/></symbol>
+    <symbol id="icon-download" viewBox="0 0 24 24"><path d="M12 3v11M7 10l5 5 5-5M4 20h16"/></symbol>
+    <symbol id="icon-upload" viewBox="0 0 24 24"><path d="M12 20V9M7 13l5-5 5 5M4 4h16"/></symbol>
+    <symbol id="icon-drive" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="6" rx="2"/><rect x="3" y="13" width="18" height="6" rx="2"/><circle cx="7" cy="8" r=".9" fill="currentColor" stroke="none"/><circle cx="7" cy="16" r=".9" fill="currentColor" stroke="none"/></symbol>
+    <symbol id="icon-git" viewBox="0 0 24 24"><circle cx="6" cy="6" r="2.5"/><circle cx="6" cy="18" r="2.5"/><circle cx="18" cy="9" r="2.5"/><path d="M6 8.5v7M8.5 6H14a4 4 0 0 1 4 3"/></symbol>
+    <symbol id="icon-rocket" viewBox="0 0 24 24"><path d="M12 2.5c3.5 2 5.5 5.5 5.5 9.5l-3 3h-5l-3-3c0-4 2-7.5 5.5-9.5Z"/><circle cx="12" cy="9" r="1.8"/><path d="M9.5 15 7 17.5M14.5 15 17 17.5M12 16v5"/></symbol>
+    <symbol id="icon-box" viewBox="0 0 24 24"><path d="m12 3 8 4.5v9L12 21l-8-4.5v-9Z"/><path d="m4 7.5 8 4.5 8-4.5M12 12v9"/></symbol>
+    <symbol id="icon-cloud" viewBox="0 0 24 24"><path d="M6.5 18a4.5 4.5 0 1 1 .6-9 6 6 0 0 1 11.5 1.7A3.8 3.8 0 0 1 17.5 18Z"/></symbol>
+    <symbol id="icon-settings" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-2.9 1.2 2 2 0 1 1-4 0 1.7 1.7 0 0 0-2.9-1.2l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1A1.7 1.7 0 0 0 2.6 15a2 2 0 1 1 0-4 1.7 1.7 0 0 0 1.2-2.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1A1.7 1.7 0 0 0 9.5 4.6a2 2 0 1 1 4 0 1.7 1.7 0 0 0 2.9 1.2l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1A1.7 1.7 0 0 0 21.4 11a2 2 0 1 1 0 4Z"/></symbol>
+    <symbol id="icon-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m16.5 16.5 4.5 4.5"/></symbol>
+    <symbol id="icon-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="icon-x" viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></symbol>
+    <symbol id="icon-history" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/></symbol>
+    <symbol id="icon-eraser" viewBox="0 0 24 24"><path d="m7 20-4-4a2 2 0 0 1 0-2.8L13 3.2a2 2 0 0 1 2.8 0l4.5 4.5a2 2 0 0 1 0 2.8L11 20Z"/><path d="M6 12h12M10 20h11"/></symbol>
+    <symbol id="icon-arrow-up" viewBox="0 0 24 24"><path d="M12 20V5M6 11l6-6 6 6"/></symbol>
+    <symbol id="icon-home" viewBox="0 0 24 24"><path d="m3 11 9-8 9 8"/><path d="M5 10v10h14V10"/></symbol>
+    <symbol id="icon-chevrons-left" viewBox="0 0 24 24"><path d="m11 17-5-5 5-5M18 17l-5-5 5-5"/></symbol>
+    <symbol id="icon-menu" viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18"/></symbol>
+    <symbol id="icon-grip" viewBox="0 0 24 24"><circle cx="9" cy="6" r="1.3" fill="currentColor" stroke="none"/><circle cx="15" cy="6" r="1.3" fill="currentColor" stroke="none"/><circle cx="9" cy="12" r="1.3" fill="currentColor" stroke="none"/><circle cx="15" cy="12" r="1.3" fill="currentColor" stroke="none"/><circle cx="9" cy="18" r="1.3" fill="currentColor" stroke="none"/><circle cx="15" cy="18" r="1.3" fill="currentColor" stroke="none"/></symbol>
+    <symbol id="icon-maximize" viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></symbol>
+    <symbol id="icon-book" viewBox="0 0 24 24"><path d="M4 4h7a3 3 0 0 1 3 3v13a2.5 2.5 0 0 0-2.5-2.5H4Z"/><path d="M20 4h-6v16a2.5 2.5 0 0 1 2.5-2.5H20Z"/></symbol>
+    <symbol id="icon-play" viewBox="0 0 24 24"><path d="M7 4l13 8-13 8Z"/></symbol>
+    <symbol id="icon-stop" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2"/></symbol>
+    <symbol id="icon-external" viewBox="0 0 24 24"><path d="M14 4h6v6M20 4l-9 9"/><path d="M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></symbol>
+    <symbol id="icon-check" viewBox="0 0 24 24"><path d="m4 13 5 5L20 6"/></symbol>
+    <symbol id="icon-alert" viewBox="0 0 24 24"><path d="M12 3 2 21h20Z"/><path d="M12 9v5M12 17.5v.5"/></symbol>
+    <symbol id="icon-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></symbol>
+    <symbol id="icon-code" viewBox="0 0 24 24"><path d="m8 8-5 4 5 4M16 8l5 4-5 4M13 5l-2 14"/></symbol>
+    <symbol id="icon-music" viewBox="0 0 24 24"><path d="M9 18V6l10-2v12"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="16.5" cy="16" r="2.5"/></symbol>
+    <symbol id="icon-message" viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4Z"/></symbol>
+    <symbol id="icon-game" viewBox="0 0 24 24"><path d="M7 8h10a5 5 0 0 1 0 10H7a5 5 0 0 1 0-10Z"/><path d="M9 11v4M7 13h4M15.5 12.5v.01M17.5 14.5v.01"/></symbol>
+    <symbol id="icon-camera" viewBox="0 0 24 24"><path d="M3 8h4l2-3h6l2 3h4v12H3Z"/><circle cx="12" cy="13" r="3.5"/></symbol>
+    <symbol id="icon-video" viewBox="0 0 24 24"><rect x="3" y="6" width="12" height="12" rx="2"/><path d="m15 12 6-4v8l-6-4Z"/></symbol>
+    <symbol id="icon-app" viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="8" rx="2"/><rect x="13" y="3" width="8" height="8" rx="2"/><rect x="3" y="13" width="8" height="8" rx="2"/><rect x="13" y="13" width="8" height="8" rx="2"/></symbol>
+    <symbol id="icon-spotify" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M7 9.5c3.5-1 7-.8 10 .8M7.5 12.6c2.8-.8 5.6-.6 8 .7M8 15.5c2.2-.6 4.3-.4 6.2.6"/></symbol>
+    <symbol id="icon-chrome" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3.5"/><path d="M12 8.5h9M9 13.5 4.5 5.5M14.5 14l-4.5 7"/></symbol>
+    <symbol id="icon-firefox" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 1 8 5c-2-1-4-1-5 0-2 2-1 5 2 6-2 3-6 4-9 2s-4-6-1-9"/></symbol>
+    <symbol id="icon-steam" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="15" cy="9.5" r="2.2"/><circle cx="8.5" cy="15" r="2.2"/><path d="m9 11-1 2"/></symbol>
+    <symbol id="icon-discord" viewBox="0 0 24 24"><path d="M6 6c4-1.5 8-1.5 12 0 2 3 3 6.5 3 10-2 1.5-4 2.3-6 2.5l-1-2M6 6c-2 3-3 6.5-3 10 2 1.5 4 2.3 6 2.5l1-2"/><circle cx="9.5" cy="12" r="1.2" fill="currentColor" stroke="none"/><circle cx="14.5" cy="12" r="1.2" fill="currentColor" stroke="none"/></symbol>
+  </svg>
+
+  <script src="/vendor/xterm.js"></script>
+  <script src="/vendor/addon-fit.js"></script>
+  <script src="/vendor/marked.min.js"></script>
+  <script src="/vendor/purify.min.js"></script>
+  <script src="/js/api.js"></script>
+  <script src="/js/app.js"></script>
+  <script src="/js/system.js"></script>
+  <script src="/js/github.js"></script>
+  <script src="/js/launcher.js"></script>
+  <script src="/js/terminal.js"></script>
+  <script src="/js/files.js"></script>
+  <script src="/js/network.js"></script>
+  <script src="/js/notes.js"></script>
+  <script src="/js/docker.js"></script>
+  <script src="/js/weather.js"></script>
+  <script src="/js/settings.js"></script>
+  <script>
+    // Safety net: never leave the boot veil on screen if a script failed.
+    setTimeout(function () {
+      var veil = document.getElementById("boot-veil");
+      if (veil && !veil.classList.contains("is-hidden")) {
+        veil.classList.add("is-hidden");
+        var link = document.getElementById("link-dot");
+        if (link) link.dataset.state = "offline";
+      }
+    }, 5000);
+  </script>
+</body>
+</html>
