@@ -1,0 +1,144 @@
+{
+  "version": 1,
+  "app": {
+    "host": "127.0.0.1",
+    "port": 8420,
+    "open_browser": true,
+    "refresh_seconds": 2
+  },
+  "ui": {
+    "theme": "dark",
+    "accent": "cyan",
+    "compact": false,
+    "card_order": [
+      "system",
+      "gpu",
+      "network",
+      "weather",
+      "storage",
+      "repos",
+      "launcher",
+      "notes",
+      "docker",
+      "controls"
+    ],
+    "card_spans": {},
+    "hidden_cards": [],
+    "active_view": "overview"
+  },
+  "launcher": {
+    "shortcuts": [
+      {
+        "id": "vscode",
+        "name": "VS Code",
+        "icon": "code",
+        "path": "code",
+        "args": "",
+        "color": "#3ba4f7"
+      },
+      {
+        "id": "explorer",
+        "name": "File Explorer",
+        "icon": "folder",
+        "path": "explorer.exe",
+        "args": "",
+        "color": "#f5c542"
+      },
+      {
+        "id": "taskmgr",
+        "name": "Task Manager",
+        "icon": "activity",
+        "path": "taskmgr.exe",
+        "args": "",
+        "color": "#5ce1e6"
+      },
+      {
+        "id": "notepadpp",
+        "name": "Notepad++",
+        "icon": "edit",
+        "path": "notepad++",
+        "args": "",
+        "color": "#8fd14f"
+      },
+      {
+        "id": "browser",
+        "name": "Browser",
+        "icon": "globe",
+        "path": "chrome",
+        "args": "",
+        "color": "#ff5f56"
+      },
+      {
+        "id": "discord",
+        "name": "Discord",
+        "icon": "message",
+        "path": "discord",
+        "args": "",
+        "color": "#7289da"
+      },
+      {
+        "id": "spotify",
+        "name": "Spotify",
+        "icon": "music",
+        "path": "spotify",
+        "args": "",
+        "color": "#1ed760"
+      },
+      {
+        "id": "terminal",
+        "name": "Windows Terminal",
+        "icon": "terminal",
+        "path": "wt.exe",
+        "args": "",
+        "color": "#a78bfa"
+      }
+    ]
+  },
+  "repos": {
+    "scan_paths": [
+      "~/Documents/GitHub",
+      "~/GitHub",
+      "~/repos",
+      "~/Repositories",
+      "~/projects",
+      "~/Projects",
+      "~/source/repos",
+      "~/dev"
+    ],
+    "extra_paths": [],
+    "max_depth": 3,
+    "max_repos": 200,
+    "cache_seconds": 20,
+    "notifications": {
+      "enabled": false,
+      "token": "",
+      "refresh_seconds": 120
+    }
+  },
+  "paths": {
+    "vscode": "code",
+    "github_desktop": ""
+  },
+  "terminal": {
+    "default_shell": "auto",
+    "font_size": 13,
+    "font_family": "Cascadia Code, Consolas, 'Courier New', monospace"
+  },
+  "files": {
+    "show_hidden": false,
+    "delete_to_recycle_bin": true,
+    "start_path": ""
+  },
+  "weather": {
+    "enabled": true,
+    "location": "",
+    "units": "metric",
+    "refresh_minutes": 15
+  },
+  "docker": {
+    "enabled": true
+  },
+  "network": {
+    "speedtest": true
+  }
+}

@@ -1,0 +1,10 @@
+# Windows Dashboard backend dependencies (Python 3.10+)
+fastapi>=0.110,<1.0
+uvicorn[standard]>=0.27,<1.0
+psutil>=5.9
+GitPython>=3.1.40
+pydantic>=2.6
+
+# Real pseudo-terminal on Windows (ConPTY). Optional: the app falls back to
+# plain pipes if this cannot be installed.
+pywinpty>=2.0.13; sys_platform == "win32"

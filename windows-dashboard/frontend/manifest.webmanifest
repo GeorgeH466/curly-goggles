@@ -1,0 +1,12 @@
+{
+  "name": "Command Center",
+  "short_name": "Command",
+  "description": "Local dashboard for your Windows PC",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#05070d",
+  "theme_color": "#05070d",
+  "icons": [
+    { "src": "/assets/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}
